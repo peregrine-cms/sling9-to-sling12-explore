@@ -1,0 +1,24 @@
+{
+  "name": "sling9-to-sling12-explore",
+  "version": "0.0.1",
+  "description": "convert the peregrine-cms project from sling9 to sling12",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "converter": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peregrine-cms/sling9-to-sling12-explore.git"
+  },
+  "author": "peregrine-cms",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/peregrine-cms/sling9-to-sling12-explore/issues"
+  },
+  "homepage": "https://github.com/peregrine-cms/sling9-to-sling12-explore#readme",
+  "dependencies": {
+    "xml2js": "^0.4.23",
+    "xmlbuilder": "^15.1.1"
+  }
+}
