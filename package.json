@@ -18,7 +18,12 @@
   },
   "homepage": "https://github.com/peregrine-cms/sling9-to-sling12-explore#readme",
   "dependencies": {
+    "fs-extra": "^9.0.1",
+    "path": "^0.12.7",
+    "prompt-sync": "^4.2.0",
     "xml2js": "^0.4.23",
-    "xmlbuilder": "^15.1.1"
+    "xml2json": "^0.12.0",
+    "xmlbuilder": "^15.1.1",
+    "xmlbuilder2": "^2.1.3"
   }
 }
