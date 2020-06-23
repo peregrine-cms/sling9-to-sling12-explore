@@ -2,16 +2,25 @@ const fs = require('fs');
 const xml2js = require('xml2js');
 const  builder = require('xmlbuilder2');
 
-const { setup } = require('./lib/actions/conversion-setup');
-const { migrateContent } = require('./lib/actions/migrate-content');
+const { setup } = require('./lib/tasks/conversion-setup');
+const { convertContentPackageToBundleContent } = require('./lib/tasks/converter');
+const { migrateCP2FM } = require('./lib/tasks/adjust-fm-project');
 
 console.log('=== time to move to sling12');
 
 let thisFolder = __dirname
 console.log('First Copy Peregrine into our Output Folder, this folder: ' + thisFolder);
 let projectFolder = setup(thisFolder);
-let baseModuleFolder = projectFolder + '/platform/base';
-migrateContent(baseModuleFolder, 'ui.apps', 'core');
+let modules = [
+    'platform/base',
+    'platform/felib',
+    'platform/replication'
+];
+for(let module of modules) {
+    convertContentPackageToBundleContent(projectFolder, module);
+}
+
+migrateCP2FM(projectFolder, modules);
 
 // const parser = new xml2js.Parser();
 //

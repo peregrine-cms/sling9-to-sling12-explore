@@ -19,7 +19,7 @@ Peregrine instance at all times.
 ## Finished Tasks
 
 * Copy entire **peregrine-cms** over into sub folder **peregrine-cms-sling12**
-* Prepare Bundle Content Folders
+* Convert **platform/base** to a Content Bundle
     * Find src/main/resources in core
     * Find src/main/content/jcr_root in ui.apps
     * Create SLING-CONTENT in core
@@ -27,17 +27,22 @@ Peregrine instance at all times.
     * Go through all folders recursively
         * Convert all .content.xml files to JSon
         * Write them out in a file with the parent folder's name + '.json'
-            
-
-## Pending Tasks
-
-* Convert **platform/base** to a Content Bundle
-    * Delete all .content.xml files
+    * Rename .content.xml files but keep them there to make conversion repeatable
     * Add SLING-CONTENT sub folders to bundle creation in POM
     * Remove ui.apps from parent POM file
-    * Delete ui.apps folder
     * Add the *include-artifact* goal of the Slingfeature Maven Plugin to create the FM file
     * Add the *attach-features* goal of the Slingfeature Maven Plugin to install the FM file
     * Add the base/core FM to the Peregrine FM Build Project
+    * Remove base.ui.apps from FM POM
+* Convert **platform/felib** to a Content Bundle
+* Convert **platform/replication** to a Content Bundle (Content Package w/o jcr_root)
+            
+## Pending Tasks
+
+* Convert **platform/base** to a Content Bundle
+    * Rename ui.apps files but keep them there to make conversion repeatable
+
+* Convert **paagerender/vue** to a Content Bundle
+* Convert **admin-base/core** to a Content Bundle
         
 ## Next Step 
