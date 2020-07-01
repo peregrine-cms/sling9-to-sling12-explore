@@ -3,56 +3,58 @@ const xml2js = require('xml2js');
 const  builder = require('xmlbuilder2');
 
 const { setup } = require('./lib/tasks/conversion-setup');
-const { convertContentPackageToBundleContent } = require('./lib/tasks/converter');
+const { convertContentPackageToBundleContent, adjustFileContent } = require('./lib/tasks/converter');
 const { migrateCP2FM } = require('./lib/tasks/adjust-fm-project');
+const { copyFiles } = require('./lib/tasks/per-fs');
 
 console.log('=== time to move to sling12');
 
 let thisFolder = __dirname
 console.log('First Copy Peregrine into our Output Folder, this folder: ' + thisFolder);
 let projectFolder = setup(thisFolder);
+let pomCopyInstructions = [
+    { 'source': 'project/build/resources', 'target': 'project/build'},
+    { 'source': 'project/build/plugins/plugin/artifactId=frontend-maven-plugin', 'target': 'project/build/plugins/plugin'}
+];
+let vueModule = { 'parent': 'pagerenderer', 'name': 'vue', 'core': 'core', 'ui': 'ui.apps', 'coreArtifact': 'pagerender-vue', 'pomCopy': pomCopyInstructions};
 let modules = [
-    'platform/base',
-    'platform/felib',
-    'platform/replication'
+    { 'parent': 'platform', 'name': 'base', 'core': 'core', 'ui': 'ui.apps'},
+    { 'parent': 'platform', 'name': 'felib', 'core': 'core', 'ui': 'ui.apps'},
+    { 'parent': 'platform', 'name': 'replication', 'core': 'core', 'ui': 'ui.apps'},
+    vueModule
 ];
 for(let module of modules) {
     convertContentPackageToBundleContent(projectFolder, module);
 }
 
-migrateCP2FM(projectFolder, modules);
+// Copy additional source files for pagerenderer/vue
+let copies = [
+    {'source': 'pagerenderer/vue/ui.apps/jsdoc.config.json', 'target': 'pagerenderer/vue/core'},
+    {'source': 'pagerenderer/vue/ui.apps/package.json', 'target': 'pagerenderer/vue/core'},
+    {'source': 'pagerenderer/vue/ui.apps/package-lock.json', 'target': 'pagerenderer/vue/core'},
+    {'source': 'pagerenderer/vue/ui.apps/rollup.config.js', 'target': 'pagerenderer/vue/core'},
+    {'source': 'pagerenderer/vue/ui.apps/src/main/js', 'target': 'pagerenderer/vue/core/src/main'},
+    {'source': 'buildscripts/buildvue.js', 'target': 'buildscripts', 'name': 'buildvue-pv.js'}
+];
+copyFiles(projectFolder, copies);
+// Adjust pagerenderer/vue files
+// First the rollup configuration to use the correct output path
+adjustFileContent(
+    projectFolder + '/pagerenderer/vue/core/rollup.config.js',
+    [{'type': 'raw', 'search': 'target/classes/etc/felibs/pagerendervue/js/perview.js', 'replace': 'target/classes/SLING-CONTENT/etc/felibs/pagerendervue/js/perview.js'}]
+);
+// Then the package configuration to use a different (adjusted) buildvue script
+adjustFileContent(
+    projectFolder + '/pagerenderer/vue/core/package.json',
+    [{'type': 'raw', 'search': 'buildscripts/buildvue.js', 'replace': 'buildscripts/buildvue-pv.js'}]
+);
+// Finally adjust the buildvue script to use the correct output paths
+adjustFileContent(
+    projectFolder + '/buildscripts/buildvue-pv.js',
+    [
+        {'type': 'raw', 'search': 'src/main/content/jcr_root/apps', 'replace': 'src/main/resources/SLING-CONTENT/apps'},
+        {'type': 'raw', 'search': './target/classes/etc/felibs/', 'replace': './target/classes/SLING-CONTENT/etc/felibs/'}
+    ]
+);
 
-// const parser = new xml2js.Parser();
-//
-// console.log(" > simple example: read the root pom from the peregrine project")
-// fs.readFile('../peregrine-cms/pom.xml', function(err, data) {
-//     parser.parseString(data, function (err, pom) {
-//
-//         // show the data structure in json up to 2 levels or so
-//         console.log("Show Data Structure up to Level 2")
-//         console.dir(pom);
-//
-//         // list some data from the pom
-//         console.log("List POM's Properties")
-//         pom.project.properties.forEach(element => {
-//             console.log(element);
-//         });
-//
-//         // read a property
-//         console.log(`the password is: ${pom.project.properties[0]['sling.password']}`);
-//
-//         // change/write a property
-//         // pom.project.properties[0]['sling.password'] = 'changeme';
-//
-//         // add a property
-//         // pom.project.properties[0]['peregrine-name'] = 'peregrineCMS';
-//
-//         // show full json
-//         console.log("Print POM as JSon")
-//         console.log(JSON.stringify(pom, true, 2));
-//
-//         // convert back to xml
-//         console.log("Converted Back to XML")
-//         console.dirxml(builder.create(pom).end({ prettyPrint: true}));
-//     });
-// });
+migrateCP2FM(projectFolder, modules);
